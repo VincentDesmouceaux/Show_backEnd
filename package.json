@@ -1,0 +1,12 @@
+{
+  "name": "show_backend",
+  "version": "1.0.0",
+  "description": "mise en place d'une API permettant de faire des réservations dans une salle",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
