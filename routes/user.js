@@ -64,6 +64,7 @@ router.post("/user/signup", fileUpload(), async (req, res) => {
 });
 
 router.post("/user/login", async (req, res) => {
+  //   console.log(req.body);
   try {
     const user = await User.findOne({ email: req.body.email });
 
