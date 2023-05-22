@@ -15,6 +15,7 @@ cloudinary.config({
   cloud_name: "duonbvcpi",
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
 });
 
 const userRoutes = require("./routes/user");

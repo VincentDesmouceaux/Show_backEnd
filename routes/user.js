@@ -39,7 +39,7 @@ router.post("/user/signup", fileUpload(), async (req, res) => {
           const result = await cloudinary.uploader.upload(
             convertToBase64(req.files.avatar),
             {
-              folder: `${newUser._id}`,
+              folder: `/show/users/${newUser._id}`,
               public_id: "avatar",
             }
           );
