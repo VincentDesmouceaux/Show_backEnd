@@ -26,7 +26,7 @@ const eventRoutes = require("./routes/event");
 const ticketRoutes = require("./routes/ticket");
 
 app.use(userRoutes);
-// app.use(promoterRoutes);
+app.use(promoterRoutes);
 // app.use(eventRoutes);
 // app.use(ticketRoutes);
 
