@@ -6,9 +6,14 @@ const Ticket = mongoose.model("Ticket", {
   date: String,
   category: String,
   seats: Number,
+  price: Number,
   event: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Event",
+  },
+  owner: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
   },
 });
 
