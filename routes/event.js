@@ -43,13 +43,27 @@ router.post(
             orchestre: 1164,
             mezzanine: 824,
           },
+          owner: req.user._id,
         });
 
+        if (req.files?.image) {
+          const result = await cloudinary.uploader.upload(
+            convertToBase64(req.files.image),
+            {
+              folder: `/show/events/${newEvent._id}`,
+              public_id: "image",
+            }
+          );
+          newEvent.image = result;
+        }
+
         await newEvent.save();
-        res.json({ message: "Event successfully created" });
+        await newEvent.populate("owner");
+        res.json({ message: "Event successfully created", event: newEvent });
       }
-    } catch (error) {}
-    res.json({ message: error.message });
+    } catch (error) {
+      res.json({ message: error.message });
+    }
   }
 );
 

@@ -21,7 +21,7 @@ router.post("/promoter/signup", fileUpload(), async (req, res) => {
     if (promoter) {
       res.status(409).json({ message: "This email already has an account" });
     } else {
-      if (req.body.email && req.body.password) {
+      if (req.body.email && req.body.password && req.body.username) {
         const token = uid2(64);
         const salt = uid2(64);
         const hash = SHA256(req.body.password + salt).toString(encBase64);
@@ -31,7 +31,7 @@ router.post("/promoter/signup", fileUpload(), async (req, res) => {
           token: token,
           hash: hash,
           salt: salt,
-          account: {},
+          account: { username: req.body.username },
         });
 
         if (req.files?.avatar) {

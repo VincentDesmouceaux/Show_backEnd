@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Promoter = mongoose.model("Promoter", {
   email: String,
   account: {
+    username: String,
     avatar: Object,
   },
 
