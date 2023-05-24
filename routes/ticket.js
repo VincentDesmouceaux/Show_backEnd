@@ -59,4 +59,20 @@ router.post("/tickets/book", isAuthenticated, async (req, res) => {
   }
 });
 
+router.post("/tickets", isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const tickets = await Ticket.find({ owner: userId }).populate("event");
+    if (tickets.length > 0) {
+      const events = tickets.map((ticket) => ticket.event);
+      const totalSeats = tickets.reduce((acc, ticket) => acc + ticket.seats, 0);
+      res.json({ events, totalSeats: totalSeats });
+    } else {
+      res.json({ message: "No reservations for this user" });
+    }
+  } catch (error) {
+    res.json({ message: error.message });
+  }
+});
+
 module.exports = router;
