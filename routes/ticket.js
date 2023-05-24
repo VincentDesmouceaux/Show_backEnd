@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { isAfter } = require("date-fns");
 
 const User = require("../models/User");
 const Promoter = require("../models/Promoter");
@@ -9,7 +10,7 @@ const Event = require("../models/Event");
 const isAuthenticated = require("../middlewares/isAuthenticated");
 
 router.post("/tickets/book", isAuthenticated, async (req, res) => {
-  const { seats, category, mail, username, price, owner } = req.body;
+  const { seats, category, eventId } = req.body;
   if (
     seats > 4 ||
     seats < 1 ||
@@ -22,20 +23,20 @@ router.post("/tickets/book", isAuthenticated, async (req, res) => {
     });
   } else {
     try {
-      const event = await Event.findById(req.body.eventId);
+      const event = await Event.findById(eventId);
+
       if (event) {
         if (isAfter(new Date(event.date), new Date())) {
-          if (event.seats[category] >= seats) {
-            event.seats[category] = event.seats[category] - seats;
+          if (event.seats[category].quantity >= seats) {
+            event.seats[category].quantity =
+              event.seats[category].quantity - seats;
             await event.save();
             const tickets = new Ticket({
-              mail: mail,
-              username: username,
               date: new Date(),
               category: category,
               seats: seats,
-              price: price,
-              event: req.body.eventId,
+              event: eventId,
+              owner: req.user._id,
             });
             await tickets.save();
             res.json({

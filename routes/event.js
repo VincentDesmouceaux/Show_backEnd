@@ -72,8 +72,14 @@ router.post(
           date: date,
           name: name,
           seats: {
-            orchestre: 1164,
-            mezzanine: 824,
+            orchestre: {
+              quantity: 1164,
+              price: 50,
+            },
+            mezzanine: {
+              quantity: 824,
+              price: 30,
+            },
           },
           owner: req.user._id,
         });
