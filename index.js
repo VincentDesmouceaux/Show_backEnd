@@ -28,7 +28,7 @@ const ticketRoutes = require("./routes/ticket");
 app.use(userRoutes);
 app.use(promoterRoutes);
 app.use(eventRoutes);
-// app.use(ticketRoutes);
+app.use(ticketRoutes);
 
 app.all("*", (req, res) => {
   res.status(404).json({ message: "This route doesn't exist" });
