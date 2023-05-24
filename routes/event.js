@@ -11,13 +11,45 @@ const Event = require("../models/Event");
 
 const isAuthenticated = require("../middlewares/promoterAuthenticated");
 
-router.get("/events/availabilities", async (req, res) => {
+router.get("/events", async (req, res) => {
   try {
-    const event = await Event.find({ date: req.query.date });
+    const { date, name } = req.query;
+
+    let query = {};
+
+    if (date) {
+      query.date = date;
+    }
+
+    if (name) {
+      query.name = new RegExp(name, "i");
+    }
+
+    const event = await Event.find(query).populate({
+      path: "owner",
+      select: "account.username account.avatar",
+    });
     if (event.length > 0) {
       res.json(event);
     } else {
       res.json({ message: "No event with this name" });
+    }
+  } catch (error) {
+    res.json({ message: error.message });
+  }
+});
+
+router.get("/events/:id", async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id).populate({
+      path: "owner",
+      select: "account.username account.avatar",
+    });
+
+    if (event) {
+      res.json(event);
+    } else {
+      res.json({ message: "No event found" });
     }
   } catch (error) {
     res.json({ message: error.message });
