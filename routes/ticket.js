@@ -49,39 +49,46 @@ router.post("/tickets/book", isAuthenticated, async (req, res) => {
               },
             });
           }
-
           if (event.seats[category].quantity >= seats) {
-            event.seats[category].quantity =
-              event.seats[category].quantity - seats;
-            await event.save();
-
-            if (existingTickets.length > 0) {
-              existingTickets[0].seats += availableSeats;
-              await existingTickets[0].save();
-            } else {
-              const newTicket = new Ticket({
-                date: new Date(),
-                category: category,
-                seats: availableSeats,
-                event: eventId,
-                owner: req.user._id,
+            if (seats > remainingSeats) {
+              return res.json({
+                message: `The limit is four seats per event. You can reserve only ${availableSeats} seat(s) for this event`,
               });
-              await newTicket.save();
             }
 
-            res.json({
-              message: `${seats} seat(s) successfully booked`,
-            });
+            if (event.seats[category].quantity >= seats) {
+              event.seats[category].quantity =
+                event.seats[category].quantity - seats;
+              await event.save();
+
+              if (existingTickets.length > 0) {
+                existingTickets[0].seats += availableSeats;
+                await existingTickets[0].save();
+              } else {
+                const newTicket = new Ticket({
+                  date: new Date(),
+                  category: category,
+                  seats: availableSeats,
+                  event: eventId,
+                  owner: req.user._id,
+                });
+                await newTicket.save();
+              }
+
+              res.json({
+                message: `${seats} seat(s) successfully booked`,
+              });
+            } else {
+              res.json({ message: "Not enought seats available" });
+            }
           } else {
-            res.json({ message: "Not enought seats available" });
+            res
+              .status(400)
+              .json({ message: "You cannot book tickets for a past event" });
           }
         } else {
-          res
-            .status(400)
-            .json({ message: "You cannot book tickets for a past event" });
+          res.json({ message: "Event not found" });
         }
-      } else {
-        res.json({ message: "Event not found" });
       }
     } catch (error) {
       res.json({ message: error.message });
