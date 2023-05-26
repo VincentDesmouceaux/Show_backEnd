@@ -23,22 +23,54 @@ router.post("/tickets/book", isAuthenticated, async (req, res) => {
     });
   } else {
     try {
+      const userId = req.user._id;
+      const totalReservedTickets = await Ticket.find({
+        owner: userId,
+        event: eventId,
+      });
+
+      const totalReservedSeats = totalReservedTickets.reduce(
+        (total, ticket) => total + ticket.seats,
+        0
+      );
+
+      if (totalReservedSeats + seats > 4) {
+        return res.status(400).json({
+          error: {
+            message: "You have already reserved the maximum number of tickets",
+          },
+        });
+      }
+
       const event = await Event.findById(eventId);
 
       if (event) {
         if (isAfter(new Date(event.date), new Date())) {
+          const existingTicket = await Ticket.findOne({
+            event: eventId,
+            owner: req.user._id,
+            category: category,
+          });
+
           if (event.seats[category].quantity >= seats) {
             event.seats[category].quantity =
               event.seats[category].quantity - seats;
             await event.save();
-            const tickets = new Ticket({
-              date: new Date(),
-              category: category,
-              seats: seats,
-              event: eventId,
-              owner: req.user._id,
-            });
-            await tickets.save();
+
+            if (existingTicket) {
+              existingTicket.seats =
+                Number(existingTicket.seats) + Number(seats);
+              await existingTicket.save();
+            } else {
+              const tickets = new Ticket({
+                date: new Date(),
+                category: category,
+                seats: seats,
+                event: eventId,
+                owner: req.user._id,
+              });
+              await tickets.save();
+            }
             res.json({
               message: `${seats} seat(s) successfully booked`,
             });
@@ -62,11 +94,15 @@ router.post("/tickets/book", isAuthenticated, async (req, res) => {
 router.post("/tickets", isAuthenticated, async (req, res) => {
   try {
     const userId = req.user._id;
+
     const tickets = await Ticket.find({ owner: userId }).populate("event");
     if (tickets.length > 0) {
-      const events = tickets.map((ticket) => ticket.event);
-      const totalSeats = tickets.reduce((acc, ticket) => acc + ticket.seats, 0);
-      res.json({ events, totalSeats: totalSeats });
+      const events = tickets.map((ticket) => ({
+        event: ticket.event,
+        reservedSeats: ticket.seats,
+      }));
+      console.log("Events:", events);
+      res.json(events);
     } else {
       res.json({ message: "No reservations for this user" });
     }
