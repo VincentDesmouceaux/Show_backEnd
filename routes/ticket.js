@@ -23,54 +23,52 @@ router.post("/tickets/book", isAuthenticated, async (req, res) => {
     });
   } else {
     try {
-      const userId = req.user._id;
-      const totalReservedTickets = await Ticket.find({
-        owner: userId,
-        event: eventId,
-      });
-
-      const totalReservedSeats = totalReservedTickets.reduce(
-        (total, ticket) => total + ticket.seats,
-        0
-      );
-
-      if (totalReservedSeats + seats > 4) {
-        return res.status(400).json({
-          error: {
-            message: "You have already reserved the maximum number of tickets",
-          },
-        });
-      }
-
       const event = await Event.findById(eventId);
 
       if (event) {
         if (isAfter(new Date(event.date), new Date())) {
-          const existingTicket = await Ticket.findOne({
+          const existingTickets = await Ticket.find({
             event: eventId,
             owner: req.user._id,
             category: category,
-          });
+          }).sort({ createdAt: 1 });
+
+          const totalReservedSeats = existingTickets.reduce(
+            (total, ticket) => total + ticket.seats,
+            0
+          );
+
+          const remainingSeats = 4 - totalReservedSeats;
+          const availableSeats = Math.min(seats, remainingSeats);
+
+          if (availableSeats === 0) {
+            return res.status(400).json({
+              error: {
+                message:
+                  "You have already reserved the maximum number of tickets",
+              },
+            });
+          }
 
           if (event.seats[category].quantity >= seats) {
             event.seats[category].quantity =
               event.seats[category].quantity - seats;
             await event.save();
 
-            if (existingTicket) {
-              existingTicket.seats =
-                Number(existingTicket.seats) + Number(seats);
-              await existingTicket.save();
+            if (existingTickets.length > 0) {
+              existingTickets[0].seats += availableSeats;
+              await existingTickets[0].save();
             } else {
-              const tickets = new Ticket({
+              const newTicket = new Ticket({
                 date: new Date(),
                 category: category,
-                seats: seats,
+                seats: availableSeats,
                 event: eventId,
                 owner: req.user._id,
               });
-              await tickets.save();
+              await newTicket.save();
             }
+
             res.json({
               message: `${seats} seat(s) successfully booked`,
             });
