@@ -107,15 +107,18 @@ router.post(
 
 router.put(
   "/event/modify/:id",
-  isAuthenticated,
+
   fileUpload(),
+  isAuthenticated,
   async (req, res) => {
     try {
       const eventId = req.params.id;
       const { date, name, orchestre, mezzanine } = req.body;
       const eventToModify = await Event.findById(eventId);
+
       if (date) eventToModify.date = date;
       if (name) eventToModify.name = name;
+
       if (orchestre) {
         if (orchestre.quantity)
           eventToModify.seats.orchestre.quantity = orchestre.quantity;
@@ -129,18 +132,19 @@ router.put(
         if (mezzanine.price)
           eventToModify.seats.mezzanine.price = mezzanine.price;
       }
+
       if (req.files?.image) {
-        await cloudinary.uploader.destroy(offerToModify.image.public_id);
+        await cloudinary.uploader.destroy(eventToModify.image.public_id);
 
         const result = await cloudinary.uploader.upload(
           convertToBase64(req.files.image),
           {
-            folder: `/show/events/${newEvent._id}`,
+            folder: `/show/events/${eventToModify._id}`,
             public_id: "image",
           }
         );
 
-        offerToModify.image = result;
+        eventToModify.image = result;
       }
 
       await eventToModify.save();
