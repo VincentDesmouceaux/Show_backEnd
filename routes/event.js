@@ -105,4 +105,50 @@ router.post(
   }
 );
 
+router.put(
+  "/event/modify/:id",
+  isAuthenticated,
+  fileUpload(),
+  async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const { date, name, orchestre, mezzanine } = req.body;
+      const eventToModify = await Event.findById(eventId);
+      if (date) eventToModify.date = date;
+      if (name) eventToModify.name = name;
+      if (orchestre) {
+        if (orchestre.quantity)
+          eventToModify.seats.orchestre.quantity = orchestre.quantity;
+        if (orchestre.price)
+          eventToModify.seats.orchestre.price = orchestre.price;
+      }
+
+      if (mezzanine) {
+        if (mezzanine.quantity)
+          eventToModify.seats.mezzanine.quantity = mezzanine.quantity;
+        if (mezzanine.price)
+          eventToModify.seats.mezzanine.price = mezzanine.price;
+      }
+      if (req.files?.image) {
+        await cloudinary.uploader.destroy(offerToModify.image.public_id);
+
+        const result = await cloudinary.uploader.upload(
+          convertToBase64(req.files.image),
+          {
+            folder: `/show/events/${newEvent._id}`,
+            public_id: "image",
+          }
+        );
+
+        offerToModify.image = result;
+      }
+
+      await eventToModify.save();
+      res.status(200).json(eventToModify);
+    } catch (error) {
+      res.json({ message: error.message });
+    }
+  }
+);
+
 module.exports = router;
