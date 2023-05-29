@@ -106,7 +106,7 @@ router.post("/tickets", isAuthenticated, async (req, res) => {
         event: ticket.event,
         reservedSeats: ticket.seats,
       }));
-      console.log("Events:", events);
+
       res.json(events);
     } else {
       res.json({ message: "No reservations for this user" });

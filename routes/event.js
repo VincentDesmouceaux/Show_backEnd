@@ -10,6 +10,7 @@ const Ticket = require("../models/Ticket");
 const Event = require("../models/Event");
 
 const isAuthenticated = require("../middlewares/promoterAuthenticated");
+const { default: id } = require("date-fns/locale/id");
 
 router.get("/events", async (req, res) => {
   try {
@@ -148,7 +149,35 @@ router.put(
       }
 
       await eventToModify.save();
+      await eventToModify.populate("owner");
       res.status(200).json(eventToModify);
+    } catch (error) {
+      res.json({ message: error.message });
+    }
+  }
+);
+
+router.delete(
+  "/event/delete/:id",
+
+  isAuthenticated,
+  async (req, res) => {
+    try {
+      const eventId = req.params.id;
+
+      await cloudinary.api.delete_resources_by_prefix(
+        `show/events/${req.params.id}`
+      );
+      await cloudinary.api.delete_folder(`show/events/${req.params.id}`);
+
+      await Event.findByIdAndDelete(eventId);
+
+      const deletedEvent = await Event.findById(eventId);
+
+      await Ticket.deleteMany({ event: eventId });
+      res.status(200).json({
+        message: "Event and all tickets linked to it have been deleted",
+      });
     } catch (error) {
       res.json({ message: error.message });
     }
