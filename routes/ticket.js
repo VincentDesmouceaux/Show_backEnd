@@ -116,4 +116,20 @@ router.post("/tickets", isAuthenticated, async (req, res) => {
   }
 });
 
+router.delete("/ticket/delete/:id", isAuthenticated, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const ticketToDelete = await Ticket.findById(ticketId);
+    console.log(ticketToDelete);
+    const eventToUpdate = await Event.findById(ticketToDelete.event);
+    eventToUpdate.seats[ticketToDelete.category].quantity +=
+      ticketToDelete.seats;
+    await Ticket.deleteOne({ _id: ticketId });
+    await eventToUpdate.save();
+    res.status(200).json({ message: "Ticket cancelled and event updated" });
+  } catch (error) {
+    res.json({ message: error.message });
+  }
+});
+
 module.exports = router;
