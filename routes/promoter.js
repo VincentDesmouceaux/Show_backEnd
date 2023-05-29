@@ -64,7 +64,6 @@ router.post("/promoter/signup", fileUpload(), async (req, res) => {
 });
 
 router.post("/promoter/login", async (req, res) => {
-  //   console.log(req.body);
   try {
     const promoter = await Promoter.findOne({ email: req.body.email });
 

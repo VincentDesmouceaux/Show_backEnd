@@ -120,7 +120,7 @@ router.delete("/ticket/delete/:id", isAuthenticated, async (req, res) => {
   try {
     const ticketId = req.params.id;
     const ticketToDelete = await Ticket.findById(ticketId);
-    console.log(ticketToDelete);
+
     const eventToUpdate = await Event.findById(ticketToDelete.event);
     eventToUpdate.seats[ticketToDelete.category].quantity +=
       ticketToDelete.seats;
