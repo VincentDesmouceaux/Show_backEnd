@@ -1,7 +1,12 @@
 const mongoose = require("mongoose");
 
 const Event = mongoose.model("Event", {
-  date: Date,
+  date: {
+    type: Date,
+    set: function (value) {
+      return new Date(value);
+    },
+  },
   name: String,
   image: { type: mongoose.Schema.Types.Mixed, default: {} },
   seats: {

@@ -18,14 +18,16 @@ router.get("/events", async (req, res) => {
 
     let query = {};
 
-    if (date) {
-      query.date = date;
-    }
-
     if (name) {
       query.name = new RegExp(name, "i");
     }
 
+    if (startDate && endDate) {
+      query.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate),
+      };
+    }
     const event = await Event.find(query).populate({
       path: "owner",
       select: "account.username account.avatar",
