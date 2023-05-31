@@ -14,7 +14,7 @@ const { default: id } = require("date-fns/locale/id");
 
 router.get("/events", async (req, res) => {
   try {
-    const { date, name } = req.query;
+    const { startDate, endDate, name } = req.query;
 
     let query = {};
 
