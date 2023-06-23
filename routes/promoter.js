@@ -89,4 +89,25 @@ router.post("/promoter/login", async (req, res) => {
   }
 });
 
+router.get("/promoter/profile", async (req, res) => {
+  try {
+    const token = req.headers.authorization.split(" ")[1];
+
+    const promoter = await Promoter.findOne({ token });
+
+    if (promoter) {
+      res.status(200).json({
+        _id: promoter._id,
+        email: promoter.email,
+        account: promoter.account,
+      });
+    } else {
+      res.status(404).json({ message: "Promoter not found" });
+    }
+  } catch (error) {
+    console.log(error.message);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
